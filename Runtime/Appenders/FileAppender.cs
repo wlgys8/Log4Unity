@@ -40,7 +40,13 @@ namespace MS.Log4Unity{
         private int _maxFileCount = 3;
         private int _maxFileSize = 1024;
 
+        private int _flushIntervalMillSeconds = 1000;
+
+        private System.DateTime _lastFlushTime;
+        
+
         private List<string> _messageQueueToFile = new List<string>();
+        private bool _isFileWriting = false;
 
         public override void OnInitialize(ConfigsReader configs)
         {
@@ -53,6 +59,7 @@ namespace MS.Log4Unity{
 
             this._maxFileCount = Mathf.Max(1,configs.GetInt("maxFileCount",3));
             this._maxFileSize = Mathf.Max(10 * 1024,configs.GetInt("maxFileSize",1024 * 1024));
+            _flushIntervalMillSeconds = Mathf.Max(0,configs.GetInt("flushInterval",1000));
             AppTrack.handleAppEvent  += HandleAppEvent;
         }
 
@@ -99,22 +106,28 @@ namespace MS.Log4Unity{
         private void QueueMessage(string message){
             var empty = _messageQueueToFile.Count == 0;
             _messageQueueToFile.Add(message);
-            if(empty){
+            if(!_isFileWriting){
                 WriteMessageToFileAsync();
             }   
         }
         
+        
         private async void WriteMessageToFileAsync(){
+            _isFileWriting = true;
             while(_messageQueueToFile.Count > 0 ){
                 string message = _messageQueueToFile[0];
+                _messageQueueToFile.RemoveAt(0);
                 var bytes = System.Text.Encoding.UTF8.GetBytes(message);
                 await _fileStream?.WriteAsync(bytes,0,bytes.Length);
                 await _fileStream?.WriteAsync(NEW_LINE,0,NEW_LINE.Length);
-                if(_messageQueueToFile.Count > 0){
-                    _messageQueueToFile.RemoveAt(0);
-                }
                 this.RollIfNeed();
             }
+            _isFileWriting = false;
+            var deltaTime = System.DateTime.Now - _lastFlushTime;
+            if(deltaTime.Milliseconds < _flushIntervalMillSeconds){
+                await Task.Delay((int)(_flushIntervalMillSeconds - deltaTime.Milliseconds));
+            }
+            _lastFlushTime = System.DateTime.Now;
             await _fileStream?.FlushAsync();
         }
 
