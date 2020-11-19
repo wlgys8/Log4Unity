@@ -123,6 +123,20 @@ namespace MS.Log4Unity{
             return true;
         }
 
+        public static string GetAppenderTypeFullName(string appenderTypeName){
+            if(!TryLoadDefaultConfigIfNot()){
+                return null;
+            }
+            if(_configuration.appenderTypesRegister == null){
+                return null;
+            }
+            string fullName;
+            if(_configuration.appenderTypesRegister.TryGetValue(appenderTypeName,out fullName)){
+                return fullName;
+            }
+            return null;
+        }
+
         public static void ConfigurateLogger(ULogger logger,string catagoryName){
             if(!TryLoadDefaultConfigIfNot()){
                 return;
@@ -184,7 +198,8 @@ namespace MS.Log4Unity{
     namespace Configurations{
 
         public class Configuration{
-
+            
+            public Dictionary<string,string> appenderTypesRegister;
             public Dictionary<string,Appender> appenders;
             public Dictionary<string,Catagory> catagories; 
         }
