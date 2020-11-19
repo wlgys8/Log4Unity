@@ -16,7 +16,7 @@
 
 ```csharp
 
-private static MS.Log4Unity.ILogger logger = LogFactory.GetLogger();
+private static MS.Log4Unity.ULogger logger = LogFactory.GetLogger();
 
 void Start(){
     logger.Debug("hello debug");
@@ -27,6 +27,7 @@ void Start(){
 }
 
 ```
+
 
 ## 配置文件
 
@@ -42,7 +43,7 @@ void Start(){
 {
     "appenders":{
         "console":{
-            "type":"MS.Log4Unity.UnityLogAppender",
+            "type":"UnityLogAppender",
         }
     },
 
@@ -73,20 +74,21 @@ void Start(){
 Appender通常由`type`与`configs`组成. 系统通过`type`来索引查找相应的Appender. 并使用`configs`对其进行配置。 内置的Appenders如下:
 
 - UnityLogAppender - 输出到unity的debug系统
-    - type : MS.Log4Unity.UnityLogAppender
+    - type : UnityLogAppender
     - configs
         - layout - Layout 日志格式化配置
 
 - FileAppender
-    - type : MS.Log4Unity.FileAppender
+    - type : FileAppender
     - configs
         - layout - Layout 日志格式化配置
         - fileName - string 文件输出路径
         - maxFileCount - number 最多保存文件数量,默认为3
         - maxFileSize - number 单个日志文件大小,单位为byte。默认为10kb
+        - flushInterval - number 日志按一定周期从内存持久化到硬盘。默认为1000ms
 
 - CatagoryFilterAppender
-    - type: MS.Log4Unity.CatagoryFilterAppender
+    - type: CatagoryFilterAppender
     - configs:
         - catagory - string 过滤的catagory正则匹配
         - appender - string 重定向appender
@@ -132,4 +134,89 @@ type为pattern时，额外支持以下字段:
 - `%]` end a coloured block
 
 
+# Appender Type 类型映射规则
 
+日志系统需要将配置的Appender Type映射为代码中对应的类型。内部会按照如下规则按顺序进行查找，直到获得对应的类型。
+
+- 查找通过`AppenderManager.RegisterAppenderType`注册的Appender类型
+- 根据配置表中的`appenderTypesRegister`进行映射
+- 直接使用`type`字段
+
+
+# 编译期优化
+
+### 1. LogLevel和Filter未解决的问题
+
+LogLevel和Filter是在运行期对日志进行过滤的，虽然避免了日志流向Appenders引起的开销，但是却无法避免字符串构造的开销。例如以下例子:
+
+```csharp
+
+void Update(){
+    logger.Info("Update");
+}
+
+```
+
+我们在Update中输出日志，即便通过LogLevel关掉了日志,但是每帧仍然有构造字符串`"Update"`的开销。还会引起GC卡顿。
+
+### 2. 在编译期进行过滤
+
+
+对于高频调用的调试日志接口，我们期望更进一步的优化。最好是对它们`Compile Out`。 这时候我们可以使用 `ConditionalLogger`
+
+```csharp
+private static MS.Log4Unity.ConditionalLogger logger = LogFactory.GetConditionalLogger();
+
+void Start(){
+    logger.EditorDebug("debug in editor only");
+    logger.Debug("debug");
+    logger.Info("info");
+    logger.Warn("warn");
+    logger.Error("error");
+    logger.Fatal("fatal");
+}
+
+```
+
+以上的代码，默认情况下，在编辑器里，只会输出
+```
+debug in editor only
+warn
+error
+fatal
+
+```
+打包后，则只会输出
+
+```
+warn
+error
+fatal
+
+```
+
+如果我们查看打包后最终编译的代码，会发现结果如下:
+
+```csharp
+private static MS.Log4Unity.ConditionalLogger logger = LogFactory.GetLogger().Conditional();
+
+void Start(){
+    logger.Warn("warn");
+    logger.Error("error");
+    logger.Fatal("fatal");
+}
+
+```
+
+即:
+- 针对`logger.Editor{XXX}`打头的方法调用，仅会在编辑器环境被编译。
+
+- `Debug`与`Info`的调用，无论在编辑器还是打包后，默认均不会被编译。
+
+-  如果要开启`Debug`和`Info`，我们需要在编译指令里加入`LOG4UNITY_DEBUG_ON`与`LOG4UNITY_INFO_ON`.
+
+
+这里内部是利用了 `System.Diagnostics.Conditional`标签特性.
+
+
+关于如何在Unity中加入宏定义，请搜索 `Platform custom #defines`
