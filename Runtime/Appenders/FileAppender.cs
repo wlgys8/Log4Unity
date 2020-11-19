@@ -45,7 +45,7 @@ namespace MS.Log4Unity{
         private System.DateTime _lastFlushTime;
         
 
-        private List<string> _messageQueueToFile = new List<string>();
+        private List<object> _messageQueueToFile = new List<object>();
         private bool _isFileWriting = false;
 
         public override void OnInitialize(ConfigsReader configs)
@@ -103,7 +103,7 @@ namespace MS.Log4Unity{
             return true;
         }
 
-        private void QueueMessage(string message){
+        private void QueueMessage(object message){
             var empty = _messageQueueToFile.Count == 0;
             _messageQueueToFile.Add(message);
             if(!_isFileWriting){
@@ -115,9 +115,12 @@ namespace MS.Log4Unity{
         private async void WriteMessageToFileAsync(){
             _isFileWriting = true;
             while(_messageQueueToFile.Count > 0 ){
-                string message = _messageQueueToFile[0];
+                var message = _messageQueueToFile[0];
                 _messageQueueToFile.RemoveAt(0);
-                var bytes = System.Text.Encoding.UTF8.GetBytes(message);
+                if(message == null){
+                    message = "";
+                }
+                var bytes = System.Text.Encoding.UTF8.GetBytes(message.ToString());
                 await _fileStream?.WriteAsync(bytes,0,bytes.Length);
                 await _fileStream?.WriteAsync(NEW_LINE,0,NEW_LINE.Length);
                 this.RollIfNeed();

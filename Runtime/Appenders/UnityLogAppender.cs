@@ -11,7 +11,7 @@ namespace MS.Log4Unity{
                 return false;
             }
             var type = logEvent.logType;
-            string message = logEvent.message;
+            var message = logEvent.message;
             switch(type){
                 case LogType.Debug:
                 case LogType.Info:

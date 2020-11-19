@@ -8,9 +8,9 @@ namespace MS.Log4Unity{
     using Configurations;
 
     public struct LogEvent{
-        public ILogger logger;
+        public ULogger logger;
         public LogType logType;
-        public string message;
+        public object message;
 
     }
 
@@ -72,7 +72,7 @@ namespace MS.Log4Unity{
             }
         }
 
-        private string FormatMessage(ILogger logger, LogType type, string message){
+        private string FormatMessage(ULogger logger, LogType type, object message){
             return PatternHelper.FormatWithLayout(_layout,logger,type,message);
         }
 

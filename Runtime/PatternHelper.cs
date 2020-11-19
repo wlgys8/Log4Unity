@@ -1,13 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Text;
 
 namespace MS.Log4Unity{
     using Configurations;
 
     public struct PatternFieldResolveContext{
-        public ILogger logger;
+        public ULogger logger;
         public LogType logType;
         public string message;
         public string parameter;
@@ -108,21 +107,22 @@ namespace MS.Log4Unity{
             return null;
         }
         
-        public static string Format(string pattern,ILogger logger, LogType type, string message){
+        public static string Format(string pattern, ULogger logger, LogType type, object message){
             return _formatter.Format(pattern,logger,type,message);
         }
 
-        public static string FormatWithLayout(Layout layout,ILogger logger, LogType type, string message){
+        public static string FormatWithLayout(Layout layout, ULogger logger, LogType type, object message){
+            var messageStr = message == null?"":message.ToString();
             Layout actualLayout = null;
             if(layout.type == "pattern"){
                 actualLayout = layout;
             }else{
                 if(!_layouts.TryGetValue(layout.type,out actualLayout)){
-                    return message;
+                    return messageStr;
                 }
             }
             if(actualLayout == null){
-                return message;
+                return messageStr;
             }
             return Format(actualLayout.pattern,logger,type,message);
         }
@@ -206,9 +206,10 @@ namespace MS.Log4Unity{
                 return true;
             }
 
-            public string Format(string pattern,ILogger logger, LogType type, string message){
+            public string Format(string pattern, ULogger logger, LogType type, object message){
+                var messageStr = message == null? "":message.ToString();
                 if(pattern == null){
-                    return message;
+                    return messageStr;
                 }
                 _index = -1;
                 _pattern = pattern;
@@ -218,7 +219,7 @@ namespace MS.Log4Unity{
                 var context = new PatternFieldResolveContext(){
                     logger = logger,
                     logType = type,
-                    message = message
+                    message = messageStr
                 };
 
                 while (true)

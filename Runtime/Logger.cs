@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿
+
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-namespace MS.Log4Unity{
 
+namespace MS.Log4Unity{
 
     public enum LogType{
         Fatal = 1,
@@ -23,36 +25,32 @@ namespace MS.Log4Unity{
         All = 31,
     }
 
-    public interface ILogger{
+    public interface ULogger{
+ 
+        void Debug(object message);
 
-        void Append(IAppender appender);
+        void Info(object message);
+
+        void Warn(object message);
+
+        void Error(object message);
+
+        void Fatal(object message);  
 
         void ClearAppenders();
 
-        void Debug(string message);
-
-        void Info(string message);
-
-        void Warn(string message);
-
-        void Error(string message);
-
-        void Fatal(string message);
+        string catagory{
+            get;
+        }
 
         LogLevel level{
             get;set;
         }
 
-        string catagory{
-            get;
-        }
+        void Append(IAppender appender);
     }
-
-    public interface IAppLogger:ILogger{
-
-    }
-
-    public class DefaultLogger : IAppLogger
+ 
+    public class ULoggerDefault:ULogger
     {
         private List<IAppender> _appenders = new List<IAppender>();
 
@@ -60,13 +58,23 @@ namespace MS.Log4Unity{
 
         private string _catagory;
 
-        public DefaultLogger(string catagory){
+        private bool _isConfigurated = false;
+
+        public ULoggerDefault(string catagory){
             _catagory = catagory;
-            Configurator.ConfigurateLogger(this,this.catagory);
+        }
+
+        private void ConfigurateIfNot(){
+            if(_isConfigurated){
+                return;
+            }
+            _isConfigurated = true;
+             Configurator.ConfigurateLogger(this,this.catagory);
         }
 
         public void Append(IAppender appender)
         {
+            ConfigurateIfNot();
             _appenders.Add(appender);
         }
 
@@ -78,18 +86,21 @@ namespace MS.Log4Unity{
 
         public LogLevel level{
             set{
+                ConfigurateIfNot();
                 _logLevel = value;
             }get{
+                 ConfigurateIfNot();
                 return _logLevel;
             }
         }
 
         public bool IsOn(LogType type){
+            ConfigurateIfNot();
             var lv = (LogLevel)type;
             return lv <= _logLevel;
         }
 
-        private void HandleMessage(LogType type,string message){
+        private void HandleMessage(LogType type,object message){
             foreach(var ap in _appenders){
                 var logEvent = new LogEvent(){
                     logger = this,
@@ -100,14 +111,15 @@ namespace MS.Log4Unity{
             }
         }
 
-        public void Debug(string message)
+        public void Debug(object message)
         {
             if(!IsOn(LogType.Debug)){
                 return;
             }
             HandleMessage(LogType.Debug,message);
         }
-        public void Info(string message)
+
+        public void Info(object message)
         {
             if(!IsOn(LogType.Info)){
                 return;
@@ -115,7 +127,7 @@ namespace MS.Log4Unity{
             HandleMessage(LogType.Info,message);
         }
 
-        public void Warn(string message)
+        public void Warn(object message)
         {
             if(!IsOn(LogType.Warn)){
                 return;
@@ -123,7 +135,7 @@ namespace MS.Log4Unity{
             HandleMessage(LogType.Warn,message);
         }
 
-        public void Error(string message)
+        public void Error(object message)
         {
             if(!IsOn(LogType.Error)){
                 return;
@@ -131,7 +143,7 @@ namespace MS.Log4Unity{
             HandleMessage(LogType.Error,message);
         }
 
-        public void Fatal(string message)
+        public void Fatal(object message)
         {
             if(!IsOn(LogType.Fatal)){
                 return;
@@ -141,80 +153,11 @@ namespace MS.Log4Unity{
 
         public void ClearAppenders()
         {
+            ConfigurateIfNot();
             _appenders.Clear();
         }
  
     }
-
-
-
-    public class DelayConfiguratedLogger : IAppLogger
-    {
-
-        private DefaultLogger _logger;
-
-        public DelayConfiguratedLogger(string catagoryName){
-            this.catagory = catagoryName;
-        }
-        public string catagory{
-            get;private set;
-        }
-
-        private IAppLogger innerLogger{
-            get{
-                if(_logger != null){
-                    return _logger;
-                }
-                _logger = new DefaultLogger(this.catagory);
-                return _logger;
-            }
-        }
-
-        public LogLevel level{
-            set{
-                innerLogger.level = level;
-            }get{
-                return innerLogger.level;
-            }
-        }
-
-        public void Append(IAppender appender)
-        {
-            innerLogger.Append(appender);
-        }
-
-        public void Debug(string message)
-        {
-            innerLogger.Debug(message);
-        }
-
-        public void Error(string message)
-        {
-            innerLogger.Error(message);
-        }
-
-        public void Fatal(string message)
-        {
-            innerLogger.Fatal(message);
-        }
-
-        public void Info(string message)
-        {
-            innerLogger.Info(message);
-        }
-
-        public void Warn(string message)
-        {
-            innerLogger.Warn(message);
-        }
-
-        public void ClearAppenders(){
-            innerLogger.ClearAppenders();
-        }
-
-
-    }
-
 
 
 

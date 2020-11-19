@@ -123,7 +123,7 @@ namespace MS.Log4Unity{
             return true;
         }
 
-        public static void ConfigurateLogger(ILogger logger,string catagoryName){
+        public static void ConfigurateLogger(ULogger logger,string catagoryName){
             if(!TryLoadDefaultConfigIfNot()){
                 return;
             }
