@@ -28,7 +28,7 @@ namespace MS.Log4Unity.Editor{
             var c = new Configuration(){
                 appenders = new Dictionary<string,Appender>(){
                     {"console",new Appender(){
-                        type = "MS.Log4Unity.UnityLogAppender",
+                        type = "UnityLogAppender",
                         configs = consoleConfigs,
                     }}
                 },
