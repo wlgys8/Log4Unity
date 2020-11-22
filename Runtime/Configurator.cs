@@ -186,8 +186,9 @@ namespace MS.Log4Unity{
     }
 
     public enum AppEventType{
-        Quit,
 
+        Launch,
+        Quit,
         /// <summary>
         /// this event only happen in UnityEditor
         /// </summary>

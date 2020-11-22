@@ -27,6 +27,10 @@ namespace MS.Log4Unity{
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void OnSessionLaunch(){
             Application.quitting += OnSessionQuit;
+            var appEvent = new AppEvent(){
+                eventType = AppEventType.Launch,
+            };
+            DispatchAppEvent(appEvent);
         }
 
         private static void OnSessionQuit(){

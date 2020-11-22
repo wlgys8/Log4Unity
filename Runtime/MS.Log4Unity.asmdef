@@ -1,3 +1,14 @@
-﻿{
-	"name": "MS.Log4Unity"
+{
+    "name": "MS.Log4Unity",
+    "references": [
+        "MS.FileRoller"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }
