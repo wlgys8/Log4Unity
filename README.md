@@ -2,10 +2,14 @@
 
 类似于log4js的日志系统实现。
 
+# Dependencies
+
+You must have `LitJson.dll` in your Project.
+
 # Install
 
 ```json
-"com.ms.log4unity":""
+"com.ms.log4unity":"https://github.com/wlgys8/Log4Unity.git"
 
 ```
 
