@@ -22,7 +22,7 @@ namespace MS.Log4Unity{
         private static PatternFormatter _formatter = new PatternFormatter();
         private static Dictionary<string,Layout> _layouts = new Dictionary<string,Layout>();
         private static Dictionary<LogType,string> _logTypeToColor = new Dictionary<LogType, string>(){
-            {LogType.Debug,"blue"},
+            {LogType.Debug,"#4169E1"},
             {LogType.Info,null},
             {LogType.Warn,"yellow"},
             {LogType.Error,"red"},
@@ -72,12 +72,24 @@ namespace MS.Log4Unity{
 
             RegisterLayout(new Layout(){
                 type = "basic",
-                pattern = "[%d] [%p] %c - %m"
+                pattern = "[%p] %c - %m"
             });
-             RegisterLayout(new Layout(){
+
+            RegisterLayout(new Layout(){
+                type = "basic-time",
+                pattern = "[%d] [%p] %c - %m",
+            });
+            
+            RegisterLayout(new Layout(){
                 type = "coloured",
+                pattern = "%[[%p] %c%] - %m"
+            });
+
+            RegisterLayout(new Layout(){
+                type = "coloured-time",
                 pattern = "%[[%d] [%p] %c%] - %m"
             });
+
             RegisterLayout(new Layout(){
                 type = "messagePassThrough",
                 pattern = null,
