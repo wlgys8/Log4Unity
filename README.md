@@ -4,7 +4,9 @@
 
 # Dependencies
 
-You must have `LitJson.dll` in your Project.
+- You must have `LitJson.dll` in your Project.
+
+- [FileRoller](https://github.com/wlgys8/FileRoller)
 
 # Install
 
@@ -86,16 +88,18 @@ Appender通常由`type`与`configs`组成. 系统通过`type`来索引查找相�
     - type : FileAppender
     - configs
         - layout - Layout 日志格式化配置
+        - rollType - 支持`Size`,`Session`,`Date`
         - fileName - string 文件输出路径
-        - maxFileCount - number 最多保存文件数量,默认为3
-        - maxFileSize - number 单个日志文件大小,单位为byte。默认为10kb
+        - keepExt - 备份时，是否保持后缀
+        - maxBackups - number 最多保存文件数量,默认为3
+        - maxFileSize - number 单个日志文件大小,单位为byte。默认为1MB
         - flushInterval - number 日志按一定周期从内存持久化到硬盘。默认为1000ms
 
 - CatagoryFilterAppender
     - type: CatagoryFilterAppender
     - configs:
         - catagory - string 过滤的catagory正则匹配
-        - appender - string 重定向appender
+        - appenders - string[] 重定向appender
         - 
 
 - 自定义Appender
@@ -185,6 +189,7 @@ void Start(){
 以上的代码，默认情况下，在编辑器里，只会输出
 ```
 debug in editor only
+info
 warn
 error
 fatal
@@ -193,6 +198,7 @@ fatal
 打包后，则只会输出
 
 ```
+info
 warn
 error
 fatal
@@ -205,6 +211,7 @@ fatal
 private static MS.Log4Unity.ConditionalLogger logger = LogFactory.GetLogger().Conditional();
 
 void Start(){
+    logger.Info("info");
     logger.Warn("warn");
     logger.Error("error");
     logger.Fatal("fatal");
@@ -215,9 +222,7 @@ void Start(){
 即:
 - 针对`logger.Editor{XXX}`打头的方法调用，仅会在编辑器环境被编译。
 
-- `Debug`与`Info`的调用，无论在编辑器还是打包后，默认均不会被编译。
-
--  如果要开启`Debug`和`Info`，我们需要在编译指令里加入`LOG4UNITY_DEBUG_ON`与`LOG4UNITY_INFO_ON`.
+- `logger.Debug`仅在`#DEBUG`为true时，被编译。
 
 
 这里内部是利用了 `System.Diagnostics.Conditional`标签特性.

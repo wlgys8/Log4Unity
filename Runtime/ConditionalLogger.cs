@@ -42,13 +42,12 @@ namespace MS.Log4Unity{
             innerLogger.Fatal(message);
         }
 
-        [Conditional("LOG4UNITY_DEBUG_ON")]
+        [Conditional("DEBUG")]
         public void Debug(object message)
         {
             innerLogger.Debug(message);
         }
 
-        [Conditional("LOG4UNITY_INFO_ON")]
         public void Info(object message)
         {
             innerLogger.Info(message);

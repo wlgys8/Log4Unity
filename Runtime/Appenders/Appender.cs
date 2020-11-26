@@ -32,6 +32,11 @@ namespace MS.Log4Unity{
         public Env env{
             get;set;
         }
+
+        public LogLevel logLevel{
+            get;set;
+        }
+
         public virtual void OnInitialize(ConfigsReader configs)
         {
             var envStr = configs.GetString("env",null);
@@ -46,11 +51,20 @@ namespace MS.Log4Unity{
                     this.env = Env.All;
                 }
             }
+            this.logLevel = Configurator.ParseLogLevel(configs.GetString("level",null));
         }
 
 
         public virtual bool HandleLogEvent(ref LogEvent logEvent)
         {
+            return CheckEnv() && CheckLevel(logEvent.logType);
+        }
+
+        private bool CheckLevel(LogType logType){
+            return Configurator.CheckLogOn(logType,this.logLevel);
+        }
+
+        private bool CheckEnv(){
             #if UNITY_EDITOR
             return (this.env & Env.EditorPlayer) == Env.EditorPlayer;
             #else

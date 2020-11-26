@@ -160,7 +160,7 @@ namespace MS.Log4Unity{
             }
         }
 
-        private static LogLevel ParseLogLevel(string level){
+        internal static LogLevel ParseLogLevel(string level){
             if(level == null){
                 return LogLevel.All;
             }
@@ -171,6 +171,14 @@ namespace MS.Log4Unity{
                 Debug.LogWarning($"failed to parse {level} to LogLevel");
                 return LogLevel.All;
             }
+        }
+
+        /// <summary>
+        /// check the logType should on or off in the specific logLevel
+        /// </summary>
+        public static bool CheckLogOn(LogType logType,LogLevel level){
+            var lv = (LogLevel)logType;
+            return lv <= level;
         }
     }
 
@@ -254,6 +262,21 @@ namespace MS.Log4Unity{
 
             public bool Has(string key){
                 return _configs.ContainsKey(key);
+            }
+
+            public string[] GetStringArray(string key,string[] defaultValue){
+                if(!Has(key)){
+                    return defaultValue;
+                }
+                var jsonData = _configs[key];
+                if(!jsonData.IsArray){
+                    return defaultValue;
+                }
+                var result = new string[jsonData.Count];
+                for(var i = 0; i < jsonData.Count;i ++){
+                    result[i] = jsonData[i].ToString();
+                }
+                return result;
             }
 
             public int GetInt(string key,int defaultValue){

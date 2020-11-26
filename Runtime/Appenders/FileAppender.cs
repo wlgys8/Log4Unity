@@ -32,6 +32,14 @@ namespace MS.Log4Unity{
             }
         }
 
+        /// <summary>
+        /// default max file size is 1MB
+        /// </summary>
+        public const int DEFAULT_MAX_FILE_SIZE = 1024 * 1024;
+        public const int DEFAULT_MAX_BACK_UPS = 3;
+
+        public const bool DEFAULT_KEEP_EXT = true;
+
 
         private string _filePath;
         private FileStream _fileStream;
@@ -58,33 +66,38 @@ namespace MS.Log4Unity{
                 fileName = DEFAULT_FILE_NAME;
             }
             this._filePath = fileName;
-            this._maxFileCount = Mathf.Max(1,configs.GetInt("maxBackups",3));
-            this._maxFileSize = Mathf.Max(10 * 1024,configs.GetInt("maxFileSize",1024 * 1024));
+            this._maxFileCount = Mathf.Max(1,configs.GetInt("maxBackups",DEFAULT_MAX_BACK_UPS));
+            this._maxFileSize = Mathf.Max(10 * 1024,configs.GetInt("maxFileSize",DEFAULT_MAX_FILE_SIZE));
             _flushIntervalMillSeconds = Mathf.Max(0,configs.GetInt("flushInterval",1000));
-            RollType rollType = RollType.Size;
+            bool keepExt = configs.GetBool("keepExt",DEFAULT_KEEP_EXT);
+
+            RollType rollType = RollType.Session;
             var rollTypeStr = configs.GetString("rollType",null);
             if(rollTypeStr != null){
                 if(!System.Enum.TryParse<RollType>(rollTypeStr,out rollType)){
                     UnityEngine.Debug.LogWarning($"bad rollType:{rollTypeStr}");
-                    rollType = RollType.Size;
+                    rollType = RollType.Session;
                 }
             }
             AppTrack.handleAppEvent += HandleAppEvent;
             if(rollType == RollType.Session){
-                _rollingFS = new RollingFileStream(_filePath,new RollingFileStream.Options(){
+                _rollingFS = new IndexedRollingFileStream(_filePath,new IndexedRollingFileStream.Options(){
                     maxFileSize = _maxFileSize,
-                    numToKeep = _maxFileCount,
+                    maxBackups = _maxFileCount,
+                    keepExts = keepExt
                 });
                 _rollingFS.Roll();
             }else if(rollType == RollType.Date){
                 _rollingFS = new DateRollingFileStream(_filePath,new DateRollingFileStream.Options(){
                     maxBackups = _maxFileCount,
-                    maxFileSize = _maxFileSize
+                    maxFileSize = _maxFileSize,
+                    keepExt = keepExt
                 });
             }else if(rollType == RollType.Size){
-                _rollingFS = new RollingFileStream(_filePath,new RollingFileStream.Options(){
+                _rollingFS = new IndexedRollingFileStream(_filePath,new IndexedRollingFileStream.Options(){
                     maxFileSize = _maxFileSize,
-                    numToKeep = _maxFileCount,
+                    maxBackups = _maxFileCount,
+                    keepExts = keepExt
                 });
             }
         }

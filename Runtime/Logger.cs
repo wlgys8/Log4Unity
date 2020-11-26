@@ -43,6 +43,8 @@ namespace MS.Log4Unity{
             get;
         }
 
+        bool IsOn(LogType type);
+
         LogLevel level{
             get;set;
         }
@@ -96,8 +98,7 @@ namespace MS.Log4Unity{
 
         public bool IsOn(LogType type){
             ConfigurateIfNot();
-            var lv = (LogLevel)type;
-            return lv <= _logLevel;
+            return Configurator.CheckLogOn(type,_logLevel);
         }
 
         private void HandleMessage(LogType type,object message){
