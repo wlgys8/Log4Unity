@@ -11,16 +11,6 @@ namespace MS.Log4Unity{
     {   
         private const string FILE_NAME = "Logs/app.log";
 
-        private static string DEFAULT_FILE_NAME{
-            get{
-                #if UNITY_EDITOR
-                return FILE_NAME;
-                #else
-                return Application.persistentDataPath + "/" + FILE_NAME;
-                #endif
-            }
-        }
-
         private static byte[] _NEW_LINE;
 
         private static byte[] NEW_LINE{
@@ -63,9 +53,19 @@ namespace MS.Log4Unity{
             base.OnInitialize(configs);
             string fileName = configs.GetString("fileName",null);
             if(fileName == null){
-                fileName = DEFAULT_FILE_NAME;
+                fileName = FILE_NAME;
             }
-            this._filePath = fileName;
+            if(Path.IsPathRooted(fileName)){
+                //absolute path
+                this._filePath = fileName;
+            }else{
+                //relative path
+                #if UNITY_EDITOR
+                this._filePath = fileName;
+                #else
+                this._filePath =  Path.Combine(Application.persistentDataPath,fileName);
+                #endif
+            }
             this._maxFileCount = Mathf.Max(1,configs.GetInt("maxBackups",DEFAULT_MAX_BACK_UPS));
             this._maxFileSize = Mathf.Max(10 * 1024,configs.GetInt("maxFileSize",DEFAULT_MAX_FILE_SIZE));
             _flushIntervalMillSeconds = Mathf.Max(0,configs.GetInt("flushInterval",1000));
