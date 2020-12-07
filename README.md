@@ -4,15 +4,22 @@
 
 # Dependencies
 
-- You must have `LitJson.dll` in your Project.
+- You must have `LitJson.dll` in your Project. [Here is a LitJson.dll wrapper for Unity Package](https://github.com/wlgys8/LitJsonUPM)
 
 - [FileRoller](https://github.com/wlgys8/FileRoller)
 
 # Install
 
+add follow to Package/manifest.json
 ```json
 "com.ms.log4unity":"https://github.com/wlgys8/Log4Unity.git"
 
+```
+
+or install by openupm
+
+```sh
+openupm install com.ms.log4unity
 ```
 
 # Usage
