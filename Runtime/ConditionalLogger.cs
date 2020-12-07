@@ -17,6 +17,11 @@ namespace MS.Log4Unity{
             }
         }
 
+        [Conditional("LOG4UNITY_INTERNAL_DEBUG")]
+        public void InternalDebug(object message){
+            innerLogger.Debug(message);
+        }
+
         [Conditional("UNITY_EDITOR")]
         public void EditorDebug(object message){
             innerLogger.Debug(message);
