@@ -86,15 +86,18 @@ void Start(){
 
 Appender通常由`type`与`configs`组成. 系统通过`type`来索引查找相应的Appender. 并使用`configs`对其进行配置。 内置的Appenders如下:
 
+
 - UnityLogAppender - 输出到unity的debug系统
     - type : UnityLogAppender
     - configs
         - layout - Layout 日志格式化配置
+        - env - Env 执行环境
 
 - FileAppender
     - type : FileAppender
     - configs
         - layout - Layout 日志格式化配置
+        - env - Env 执行环境
         - rollType - 支持`Size`,`Session`,`Date`
         - fileName - string 文件输出路径
         - keepExt - 备份时，是否保持后缀
@@ -105,11 +108,19 @@ Appender通常由`type`与`configs`组成. 系统通过`type`来索引查找相�
 - CatagoryFilterAppender
     - type: CatagoryFilterAppender
     - configs:
+        - env - Env 执行环境
         - catagory - string 过滤的catagory正则匹配
         - appenders - string[] 重定向appender
         - 
 
 - 自定义Appender
+
+
+其中Env为枚举字符串，定义如下:
+
+- `EditorPlayer` 只在编辑器中有效
+- `BuiltPlayer` 只在打包后有效
+- `All` 均生效
 
 
 ### 5. 日志格式化 Layout
@@ -124,7 +135,9 @@ Appender通常由`type`与`configs`组成. 系统通过`type`来索引查找相�
 type支持以下类型
 
 - basic
+- basic-time
 - coloured
+- coloured-time
 - pattern
 
 type为pattern时，额外支持以下字段:
