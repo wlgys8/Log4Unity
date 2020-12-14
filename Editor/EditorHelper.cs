@@ -16,25 +16,41 @@ namespace MS.Log4Unity.Editor{
                 Debug.LogWarning("already exists file at:" + DEFAULT_CONFIG_FILE_PATH);
                 return;
             }
+            var basicLayout = new JsonData();
+            basicLayout.SetJsonType(JsonType.Object);
+            basicLayout["type"] = "basic";
+
+            var basicTimeLayout = new JsonData();
+            basicTimeLayout.SetJsonType(JsonType.Object);
+            basicTimeLayout["type"] = "basic-time";
             
             var consoleConfigs = new JsonData();
             consoleConfigs.SetJsonType(JsonType.Object);
-            var layout = new JsonData();
-            consoleConfigs["layout"] = layout;
-            layout.SetJsonType(JsonType.Object);
-            layout["type"] = "basic";
-            Debug.Log(consoleConfigs.ToJson());
+            consoleConfigs["layout"] = basicLayout;
+            
+
+            var fileConfigs = new JsonData();
+            fileConfigs.SetJsonType(JsonType.Object);
+            fileConfigs["rollType"] = "Session";
+            fileConfigs["env"] = Env.EditorPlayer.ToString();
+            fileConfigs["layout"]= basicTimeLayout;
 
             var c = new Configuration(){
                 appenders = new Dictionary<string,Appender>(){
                     {"console",new Appender(){
                         type = "UnityLogAppender",
                         configs = consoleConfigs,
-                    }}
+                    }},
+                    {
+                        "file",new Appender(){
+                            type = "FileAppender",
+                            configs = fileConfigs,
+                        }
+                    }
                 },
                 catagories = new Dictionary<string,Catagory>(){
                     {"default",new Catagory(){
-                        appenders = new string[]{"console"},
+                        appenders = new string[]{"console","file"},
                         level = "all",
                     }}
                 },
