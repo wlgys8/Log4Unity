@@ -83,6 +83,8 @@ namespace MS.Log4Unity{
             if(configs.Has("layout")){
                 var dict = configs.GetConfigs("layout");
                 _layout = new Layout(dict);
+            }else{
+                _layout = new Layout();
             }
         }
 
