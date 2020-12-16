@@ -1,7 +1,7 @@
 {
 	"name":"com.ms.log4unity",
 	"display":"Log4Unity",
-	"version":"0.2.0",
+	"version":"0.3.0",
 	"description":"Log4Unity",
 	"dependencies": {
 		"com.ms.fileroller":"0.1.0"
