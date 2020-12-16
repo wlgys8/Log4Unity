@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using LitJson;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MS.Log4Unity{
 
@@ -13,7 +14,10 @@ namespace MS.Log4Unity{
     {
         public const string DEFAULT_CATAGORY = "default";
 
-        private static Dictionary<string,Catagory> _catagories = new Dictionary<string,Catagory>();
+        private static Dictionary<string,Catagory> _exactCatagories = new Dictionary<string,Catagory>();
+        private static List<RegexPatternCatagory> _fuzzyCatagories = new  List<RegexPatternCatagory>();
+        
+
         private static Configuration _configuration;
 
         public static bool TryLoad(string configFile){
@@ -48,32 +52,55 @@ namespace MS.Log4Unity{
             TryLoadFromText(configText);
             if(_configuration == null){
                 _configuration = new Configuration();
+                OnConfigurationLoadSuccess();
             }
-                  
         }
 
         public static bool TryLoadFromText(string configText){
             try{
                 _configuration = JsonMapper.ToObject<Configuration>(configText);
+                OnConfigurationLoadSuccess();
                 return true;
             }catch(System.Exception e){
                 Debug.LogException(e);
                 return false;
             }
         }
+
+        private static void OnConfigurationLoadSuccess(){
+            _exactCatagories.Clear();
+            _fuzzyCatagories.Clear();
+            if(_configuration.catagories == null){
+                return;
+            }
+            foreach(var c in _configuration.catagories){
+                if(c.name == null){
+                    Debug.LogWarning("name required for catagory");
+                    continue;
+                }
+                if(c.matchType == null || c.matchType == "exact"){
+                    _exactCatagories.Add(c.name,c);
+                }else if(c.matchType == "regex"){
+                    _fuzzyCatagories.Add(new RegexPatternCatagory(c));
+                }else{
+                    Debug.LogWarning($"unknown matchType {c.matchType}");
+                }
+            }
+        }
         
         private static Catagory GetCatagory(string name){
-            if(_configuration == null){
-                return null;
+            if(_exactCatagories.ContainsKey(name)){
+                return _exactCatagories[name];
             }
-            if(_configuration.catagories == null){
-                return null;
+            foreach(var c in _fuzzyCatagories){
+                if(c.regex.IsMatch(name)){
+                    return c.catagory;
+                }
             }
-            if(!_configuration.catagories.ContainsKey(name)){
-                return null;
-            }
-            return _configuration.catagories[name];
+            return null;
         }
+
+        
 
         public static Appender GetAppender(string name){
             if(!CheckConfigFileLoaded()){
@@ -145,6 +172,10 @@ namespace MS.Log4Unity{
             if(catagory == null){
                 catagory = Configurator.GetCatagory(DEFAULT_CATAGORY);
             }
+            if(catagory == null){
+                //missing default catagory
+                return;
+            }
             logger.ClearAppenders();
             var level = ParseLogLevel(catagory.level);
             logger.level = level;
@@ -180,6 +211,17 @@ namespace MS.Log4Unity{
             var lv = (LogLevel)logType;
             return lv <= level;
         }
+
+
+        private class RegexPatternCatagory{
+            public readonly Catagory catagory;
+            public readonly Regex regex;
+
+            public RegexPatternCatagory(Catagory catagory){
+                this.catagory = catagory;
+                regex = new Regex(catagory.name);
+            }
+        }
     }
 
     [System.Flags]
@@ -210,7 +252,7 @@ namespace MS.Log4Unity{
             
             public Dictionary<string,string> appenderTypesRegister;
             public Dictionary<string,Appender> appenders;
-            public Dictionary<string,Catagory> catagories; 
+            public List<Catagory> catagories;
         }
 
 
@@ -249,6 +291,9 @@ namespace MS.Log4Unity{
         public class Catagory{
             public string[] appenders;
             public string level;
+            public string name;
+            public string matchType;
+
         }
 
 

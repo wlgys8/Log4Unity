@@ -60,11 +60,13 @@ void Start(){
         }
     },
 
-    "catagories":{
-        "default":{
-            "appenders":["console"]
+    "catagories":[
+        {
+            "name":"default",
+            "appenders":["console"],
+            "level":"all"
         }
-    }
+    ]
 }
 
 ```
@@ -77,6 +79,11 @@ void Start(){
 ### 3. Catagory配置
 
 目前支持如下字段:
+
+- matchType - string, 类型名字匹配方式，支持 (exact|regex)
+    - exact 精确匹配
+    - regex 正则匹配
+- name - string, 类型名字
 
 - appenders - string[] , 定义日志输出的目标
 

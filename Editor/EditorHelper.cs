@@ -48,11 +48,12 @@ namespace MS.Log4Unity.Editor{
                         }
                     }
                 },
-                catagories = new Dictionary<string,Catagory>(){
-                    {"default",new Catagory(){
+                catagories = new List<Catagory>(){
+                    new Catagory(){
+                        name = "default",
                         appenders = new string[]{"console","file"},
                         level = "all",
-                    }}
+                    },
                 },
             };
             var writter = new JsonWriter();
