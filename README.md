@@ -216,8 +216,6 @@ void Start(){
 以上的代码，默认情况下，在编辑器里，只会输出
 ```
 debug in editor only
-info
-warn
 error
 fatal
 
@@ -225,8 +223,6 @@ fatal
 打包后，则只会输出
 
 ```
-info
-warn
 error
 fatal
 
@@ -238,8 +234,6 @@ fatal
 private static MS.Log4Unity.ConditionalLogger logger = LogFactory.GetLogger().Conditional();
 
 void Start(){
-    logger.Info("info");
-    logger.Warn("warn");
     logger.Error("error");
     logger.Fatal("fatal");
 }
@@ -249,8 +243,9 @@ void Start(){
 即:
 - 针对`logger.Editor{XXX}`打头的方法调用，仅会在编辑器环境被编译。
 
-- `logger.Debug`仅在`#DEBUG`为true时，被编译。
-
+- `logger.Debug`仅在`#if LOG4UNITY_DEBUG`为true时，被编译。
+- `logger.Info`仅在`#if LOG4UNITY_INFO`为true时，被编译。
+- `logger.Warn`仅在`#if LOG4UNITY_WARN`为true时，被编译。
 
 这里内部是利用了 `System.Diagnostics.Conditional`标签特性.
 
