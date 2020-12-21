@@ -17,11 +17,6 @@ namespace MS.Log4Unity{
             }
         }
 
-        [Conditional("LOG4UNITY_INTERNAL_DEBUG")]
-        public void InternalDebug(object message){
-            innerLogger.Debug(message);
-        }
-
         [Conditional("UNITY_EDITOR")]
         public void EditorDebug(object message){
             innerLogger.Debug(message);
@@ -47,17 +42,19 @@ namespace MS.Log4Unity{
             innerLogger.Fatal(message);
         }
 
-        [Conditional("DEBUG")]
+        [Conditional("LOG4UNITY_DEBUG")]
         public void Debug(object message)
         {
             innerLogger.Debug(message);
         }
 
+        [Conditional("LOG4UNITY_INFO")]
         public void Info(object message)
         {
             innerLogger.Info(message);
         }
 
+        [Conditional("LOG4UNITY_WARN")]
         public void Warn(object message)
         {
             innerLogger.Warn(message);
@@ -70,6 +67,37 @@ namespace MS.Log4Unity{
         {
             innerLogger.Fatal(message);
         }
+
+        public static bool isDebugDefined{
+            get{
+                #if LOG4UNITY_DEBUG
+                return true;
+                #else
+                return false;
+                #endif
+            }
+        }
+
+        public static bool isInfoDefined{
+            get{
+                #if LOG4UNITY_INFO
+                return true;
+                #else
+                return false;
+                #endif
+            }
+        }
+
+        public static bool isWarnDefined{
+            get{
+                #if LOG4UNITY_WARN
+                return true;
+                #else
+                return false;
+                #endif
+            }
+        }
+
 
     }
 }
