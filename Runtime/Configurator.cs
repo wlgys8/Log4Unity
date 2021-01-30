@@ -248,6 +248,7 @@ namespace MS.Log4Unity{
 
     namespace Configurations{
 
+        [UnityEngine.Scripting.Preserve]
         public class Configuration{
             
             public Dictionary<string,string> appenderTypesRegister;
